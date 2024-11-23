@@ -5,6 +5,8 @@ from database_setup import Base, Restaurant, MenuItem
 
 app = Flask(__name__)
 
+app.config['SECRET_KEY'] = '2eac451658c45531a2cd26601e85c6eb'
+
 engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
@@ -24,10 +26,22 @@ def restaurants():
     restaurants = session.query(Restaurant).all()
     return render_template('restaurants.html', restaurants=restaurants)
 
+
+@app.route('/admin/')
+def admin():
+    restaurants = session.query(Restaurant).all()
+    return render_template('admin_restaurants.html', restaurants=restaurants)
+
 @app.route('/restaurants/JSON/')
 def restaurantsJSON():
     restaurants = session.query(Restaurant).all()
     return jsonify(RestaurantNames = [i.serialize() for i in restaurants])
+
+@app.route('/restaurants/<int:restaurant_id>/usermenu/')
+def UserMenu(restaurant_id):
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    items = session.query(MenuItem).filter_by(restaurant_id=restaurant.id).all()
+    return render_template('user_menu.html', restaurant=restaurant, items=items)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
@@ -76,16 +90,16 @@ def newMenuItem(restaurant_id):
 
     return render_template('newmenuitem.html', restaurant=restaurant)
 
-# @app.route('/restaurants/new/', methods=['GET', 'POST'])
-# def newRestaurant():
-#     if request.method == 'POST':
-#         name = request.form.get('name')
-#         new_item = Restaurant(name=name)
-#         session.add(new_item)
-#         session.commit()
-#         return redirect(url_for('restaurants'))
+@app.route('/restaurants/new/', methods=['GET', 'POST'])
+def newRestaurant():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        restaurant1 = Restaurant(name=name)
+        session.add(restaurant1)
+        session.commit()
+        return redirect(url_for('restaurants'))
 
-#     return render_template('newrestaurant.html')
+    return render_template('newrestaurant.html')
 
 # Task 2: Create route for editMenuItem function here
 @app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/edit', methods = ['GET', 'POST'])
@@ -118,6 +132,6 @@ def deleteMenuItem(restaurant_id, menu_id):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'super_secret_key'
+    app.secret_key = '2eac451658c45531a2cd26601e85c6eb'
     app.debug = True
     app.run(host='0.0.0.0', port=8085)

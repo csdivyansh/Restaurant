@@ -102,10 +102,7 @@ a {
   text-align: center;
 }
 
-.create-new-button{
-  text-align: center;
-  font-size: larger;
-}
+
 
 .restaurants-container {
   display: flex;
